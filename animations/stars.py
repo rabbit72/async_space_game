@@ -25,7 +25,7 @@ def generate_stars(canvas, quantity: int, symbols: iter = "+*.:") -> list:
 async def blink(canvas, row, column, symbol="*"):
     while True:
 
-        start_offset = random.randint(10, 25)
+        start_offset = random.randint(5, 25)
         canvas.addstr(row, column, symbol, curses.A_DIM)
         for _ in range(start_offset):
             await asyncio.sleep(0)
