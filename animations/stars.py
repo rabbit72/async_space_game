@@ -1,6 +1,6 @@
 import random
-import asyncio
 import curses
+from custom_sleep import async_sleep
 
 
 def generate_stars(canvas, quantity: int, symbols: iter = "+*.:") -> list:
@@ -25,19 +25,15 @@ def generate_stars(canvas, quantity: int, symbols: iter = "+*.:") -> list:
 async def blink(canvas, row, column, symbol="*"):
     while True:
 
-        start_offset = random.randint(5, 25)
+        offset = random.randint(5, 25)
         canvas.addstr(row, column, symbol, curses.A_DIM)
-        for _ in range(start_offset):
-            await asyncio.sleep(0)
+        await async_sleep(offset)
 
         canvas.addstr(row, column, symbol)
-        for _ in range(3):
-            await asyncio.sleep(0)
+        await async_sleep(3)
 
         canvas.addstr(row, column, symbol, curses.A_BOLD)
-        for _ in range(5):
-            await asyncio.sleep(0)
+        await async_sleep(5)
 
         canvas.addstr(row, column, symbol)
-        for _ in range(3):
-            await asyncio.sleep(0)
+        await async_sleep(3)
