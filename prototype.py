@@ -4,6 +4,7 @@ from curses import wrapper
 from curses import curs_set
 from animations.fire import fire
 from animations.stars import generate_stars
+from animations.spaceship import animate_spaceship
 
 TIC_TIMEOUT = 0.1
 
@@ -15,6 +16,11 @@ def draw(canvas):
 
     coroutines = [star for star in generate_stars(canvas, 100)]
     coroutines.append(fire(canvas, center_row, center_column))
+
+    # add spaceship animation
+    with open("./models/spaceship_f1") as f1, open("./models/spaceship_f2") as f2:
+        spaceship_frames = [f1.read(), f2.read()]
+    coroutines.append(animate_spaceship(canvas, center_row, center_column, spaceship_frames))
 
     while True:
         for coroutine in coroutines:
