@@ -10,7 +10,8 @@ TIC_TIMEOUT = 0.1
 
 
 def draw(canvas):
-    center_row, center_column = curses.LINES // 2, curses.COLS // 2
+    max_y, max_x = canvas.getmaxyx()
+    center_row, center_column = max_y // 2, max_x // 2
     canvas.border()
     curs_set(False)
 
