@@ -20,8 +20,11 @@ def draw(canvas):
 
     # add spaceship animation
     with open("./models/spaceship_f1") as f1, open("./models/spaceship_f2") as f2:
-        spaceship_frames = [f1.read(), f2.read()]
-    coroutines.append(animate_spaceship(canvas, center_row, center_column, spaceship_frames))
+        frame_1 = f1.read()
+        frame_2 = f2.read()
+    coroutines.append(animate_spaceship(
+        canvas, center_row, center_column, frame_1, frame_2
+    ))
 
     while True:
         for coroutine in coroutines:
