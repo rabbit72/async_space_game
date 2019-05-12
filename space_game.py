@@ -10,10 +10,14 @@ TIC_TIMEOUT = 0.1
 
 
 def draw(canvas):
+
+    # initialisation
+    canvas.border()
+    canvas.nodelay(True)  # make non block input
+    curs_set(False)
+
     max_y, max_x = canvas.getmaxyx()
     center_row, center_column = max_y // 2, max_x // 2
-    canvas.border()
-    curs_set(False)
 
     coroutines = [star for star in generate_stars(canvas, 100)]
     coroutines.append(fire(canvas, center_row, center_column))
@@ -26,7 +30,8 @@ def draw(canvas):
         canvas, center_row, center_column, frame_1, frame_2
     ))
 
-    while True:
+    # custom event loop
+    while coroutines:
         for coroutine in coroutines:
             try:
                 coroutine.send(None)
@@ -34,11 +39,7 @@ def draw(canvas):
                 coroutines.remove(coroutine)
 
         canvas.border()
-        canvas.refresh()
         time.sleep(TIC_TIMEOUT)
-
-        if not coroutines:
-            break
 
 
 if __name__ == '__main__':

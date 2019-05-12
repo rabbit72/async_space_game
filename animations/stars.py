@@ -19,15 +19,14 @@ def generate_stars(canvas, quantity: int, symbols: iter = "+*.:") -> list:
         used_coordinates.add((row, column))
 
         symbol = random.choice(symbols)
-        yield blink(canvas, row, column, symbol)
-
-
-async def blink(canvas, row, column, symbol="*"):
-    while True:
-
         offset = random.randint(5, 25)
+        yield blink(canvas, row, column, offset, symbol)
+
+
+async def blink(canvas, row, column, offset_tics: int, symbol="*"):
+    while True:
         canvas.addstr(row, column, symbol, curses.A_DIM)
-        await async_sleep(offset)
+        await async_sleep(offset_tics)
 
         canvas.addstr(row, column, symbol)
         await async_sleep(3)

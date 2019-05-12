@@ -9,7 +9,6 @@ async def animate_spaceship(
         *other_frames: str
 ):
     frame_rows, frame_columns = get_frame_size(main_frame)
-    canvas.nodelay(True)  # make non block input
 
     # correcting depend on frame size
     corrected_start_column = start_column - (frame_columns // 2)
