@@ -39,6 +39,7 @@ def draw(canvas):
                 coroutines.remove(coroutine)
 
         canvas.border()
+        canvas.refresh()
         time.sleep(TIC_TIMEOUT)
 
 

@@ -31,7 +31,6 @@ async def animate_spaceship(
 
         for frame in frames:
             draw_frame(canvas, current_row, current_column, frame)
-            canvas.refresh()
 
             await async_sleep(2)
 
