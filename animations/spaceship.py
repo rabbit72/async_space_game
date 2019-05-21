@@ -1,5 +1,5 @@
 from curses_tools import draw_frame, read_controls, get_frame_size
-from custom_sleep import async_sleep
+from custom_tools import async_sleep
 
 
 async def animate_spaceship(

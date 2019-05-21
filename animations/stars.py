@@ -1,6 +1,6 @@
 import random
 import curses
-from custom_sleep import async_sleep
+from custom_tools import async_sleep
 
 
 def generate_stars(canvas, quantity: int, symbols: iter = "+*.:") -> list:
