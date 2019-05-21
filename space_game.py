@@ -16,6 +16,7 @@ def draw(canvas):
     canvas.border()
     canvas.nodelay(True)  # make non block input
     curs_set(False)
+    coroutines = []
 
     max_y, max_x = canvas.getmaxyx()
     center_row, center_column = max_y // 2, max_x // 2
@@ -25,7 +26,7 @@ def draw(canvas):
     main_spaceship_frame, *other_spaceship_frames = spaceship_frames
 
     # add stars animation
-    coroutines = [star for star in generate_stars(canvas, 100)]
+    coroutines.extend([star for star in generate_stars(canvas, 100)])
 
     # add fire animation
     coroutines.append(fire(canvas, center_row, center_column))
