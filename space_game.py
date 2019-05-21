@@ -5,6 +5,7 @@ from curses import curs_set
 from animations.fire import fire
 from animations.stars import generate_stars
 from animations.spaceship import animate_spaceship
+from custom_tools import load_frames_from_dir
 
 TIC_TIMEOUT = 0.1
 
@@ -19,15 +20,19 @@ def draw(canvas):
     max_y, max_x = canvas.getmaxyx()
     center_row, center_column = max_y // 2, max_x // 2
 
+    # load game frames
+    spaceship_frames = load_frames_from_dir("./models/spaceship/")
+    main_spaceship_frame, *other_spaceship_frames = spaceship_frames
+
+    # add stars animation
     coroutines = [star for star in generate_stars(canvas, 100)]
+
+    # add fire animation
     coroutines.append(fire(canvas, center_row, center_column))
 
     # add spaceship animation
-    with open("./models/spaceship/frame1") as f1, open("./models/spaceship/frame2") as f2:
-        frame_1 = f1.read()
-        frame_2 = f2.read()
     coroutines.append(animate_spaceship(
-        canvas, center_row, center_column, frame_1, frame_2
+        canvas, center_row, center_column, main_spaceship_frame, *other_spaceship_frames
     ))
 
     # custom event loop
