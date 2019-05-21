@@ -23,7 +23,7 @@ def draw(canvas):
     coroutines.append(fire(canvas, center_row, center_column))
 
     # add spaceship animation
-    with open("./models/spaceship_f1") as f1, open("./models/spaceship_f2") as f2:
+    with open("./models/spaceship/frame1") as f1, open("./models/spaceship/frame2") as f2:
         frame_1 = f1.read()
         frame_2 = f2.read()
     coroutines.append(animate_spaceship(
