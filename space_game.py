@@ -5,6 +5,7 @@ from curses import curs_set
 from animations.fire import fire
 from animations.stars import generate_stars
 from animations.spaceship import animate_spaceship
+from animations.space_garbage import fly_garbage
 from custom_tools import load_frames_from_dir
 
 TIC_TIMEOUT = 0.1
@@ -24,6 +25,10 @@ def draw(canvas):
     # load game frames
     spaceship_frames = load_frames_from_dir("./models/spaceship/")
     main_spaceship_frame, *other_spaceship_frames = spaceship_frames
+    garbage_frames = load_frames_from_dir("./models/garbage")
+
+    # add one garbage animation
+    coroutines.append(fly_garbage(canvas, 10, garbage_frames[0]))
 
     # add stars animation
     coroutines.extend([star for star in generate_stars(canvas, 100)])
