@@ -5,15 +5,67 @@ from curses import wrapper
 from curses import curs_set
 from animations.fire import fire
 from animations.stars import generate_stars
-from animations.spaceship import animate_spaceship, run_spaceship
 from animations.space_garbage import fly_garbage
 from custom_tools import load_frames_from_dir
 from custom_tools import async_sleep
 from typing import Iterable
+from curses_tools import draw_frame, read_controls, get_frame_size
+import itertools
+from physics import update_speed
 
 
 TIC_TIMEOUT = 0.1
 COROUTINES = []
+spaceship_frame = None
+
+
+async def run_spaceship(canvas, start_row: int, start_column: int):
+    frame_rows, frame_columns = get_frame_size(spaceship_frame)
+    border_indent = 1
+    # correcting depend on frame size
+    frame_center_column = (frame_columns // 2)
+    corrected_start_column = start_column - frame_center_column
+    current_row, current_column = start_row, corrected_start_column
+
+    max_y, max_x = canvas.getmaxyx()
+    min_row, min_column = border_indent, border_indent
+    max_row = max_y - frame_rows - border_indent
+    max_column = max_x - frame_columns - border_indent
+
+    row_speed = column_speed = 0
+    new_row = current_row
+    new_column = current_column
+    while True:
+        diff_rows, diff_columns, space_button = read_controls(canvas)
+        row_speed, column_speed = update_speed(
+            row_speed, column_speed, diff_rows, diff_columns
+        )
+        new_row += row_speed
+        new_column += column_speed
+        # middle coordinate for correct position when abs(diff_rows) > 1
+        current_row = sorted([min_row, max_row, new_row])[1]
+        current_column = sorted([min_column, max_column, new_column])[1]
+
+        draw_frame(canvas, current_row, current_column, spaceship_frame)
+        previous_frame = spaceship_frame
+
+        if space_button:
+            global COROUTINES
+            COROUTINES.append(
+                fire(canvas, current_row, current_column + frame_center_column)
+            )
+
+        await async_sleep(1)
+        # delete previous frame before next one
+        draw_frame(canvas, current_row, current_column, previous_frame, negative=True)
+
+
+async def animate_spaceship(main_frame: str, *other_frames: str):
+    global spaceship_frame
+    frames = [main_frame, *other_frames]
+    for frame in itertools.cycle(frames):
+        spaceship_frame = frame
+        await async_sleep(2)
 
 
 def draw(canvas):
@@ -37,9 +89,6 @@ def draw(canvas):
 
     # add stars animation
     COROUTINES.extend([star for star in generate_stars(canvas, 100)])
-
-    # add fire animation
-    COROUTINES.append(fire(canvas, center_row, center_column))
 
     # add spaceship animation
     COROUTINES.append(animate_spaceship(main_spaceship_frame, *other_spaceship_frames))
