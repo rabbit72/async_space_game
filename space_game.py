@@ -5,7 +5,7 @@ from curses import wrapper
 from curses import curs_set
 from animations.fire import fire
 from animations.stars import generate_stars
-from animations.spaceship import animate_spaceship
+from animations.spaceship import animate_spaceship, run_spaceship
 from animations.space_garbage import fly_garbage
 from custom_tools import load_frames_from_dir
 from custom_tools import async_sleep
@@ -42,9 +42,8 @@ def draw(canvas):
     COROUTINES.append(fire(canvas, center_row, center_column))
 
     # add spaceship animation
-    COROUTINES.append(animate_spaceship(
-        canvas, max_row, center_column, main_spaceship_frame, *other_spaceship_frames
-    ))
+    COROUTINES.append(animate_spaceship(main_spaceship_frame, *other_spaceship_frames))
+    COROUTINES.append(run_spaceship(canvas, max_row, center_column))
 
     # custom event loop
     while COROUTINES:

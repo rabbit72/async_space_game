@@ -1,16 +1,14 @@
 from curses_tools import draw_frame, read_controls, get_frame_size
 from custom_tools import async_sleep
+import itertools
 
 
-async def animate_spaceship(
-        canvas, start_row: int,
-        start_column: int,
-        main_frame: str,
-        *other_frames: str
-):
-    frame_rows, frame_columns = get_frame_size(main_frame)
+spaceship_frame = None
+
+
+async def run_spaceship(canvas, start_row: int, start_column: int):
+    frame_rows, frame_columns = get_frame_size(spaceship_frame)
     border_indent = 1
-
     # correcting depend on frame size
     corrected_start_column = start_column - (frame_columns // 2)
     current_row, current_column = start_row, corrected_start_column
@@ -20,7 +18,6 @@ async def animate_spaceship(
     max_row = max_y - frame_rows - border_indent
     max_column = max_x - frame_columns - border_indent
 
-    frames = [main_frame, *other_frames]
     while True:
         diff_rows, diff_columns, press_enter = read_controls(canvas)
         new_row = current_row + diff_rows
@@ -29,10 +26,16 @@ async def animate_spaceship(
         current_row = sorted([min_row, max_row, new_row])[1]
         current_column = sorted([min_column, max_column, new_column])[1]
 
-        for frame in frames:
-            draw_frame(canvas, current_row, current_column, frame)
+        draw_frame(canvas, current_row, current_column, spaceship_frame)
+        previous_frame = spaceship_frame
+        await async_sleep(1)
+        # delete previous frame before next one
+        draw_frame(canvas, current_row, current_column, previous_frame, negative=True)
 
-            await async_sleep(2)
 
-            # delete previous frame before next one
-            draw_frame(canvas, current_row, current_column, frame, negative=True)
+async def animate_spaceship(main_frame: str, *other_frames: str):
+    global spaceship_frame
+    frames = [main_frame, *other_frames]
+    for frame in itertools.cycle(frames):
+        spaceship_frame = frame
+        await async_sleep(2)
