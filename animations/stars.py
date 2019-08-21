@@ -1,5 +1,6 @@
-import random
 import curses
+import random
+
 from custom_tools import async_sleep
 
 

@@ -1,18 +1,16 @@
-import time
 import curses
-import random
-from curses import wrapper
-from curses import curs_set
-from animations.fire import fire
-from animations.stars import generate_stars
-from animations.space_garbage import fly_garbage
-from custom_tools import load_frames_from_dir
-from custom_tools import async_sleep
-from typing import Iterable
-from curses_tools import draw_frame, read_controls, get_frame_size
 import itertools
-from physics import update_speed
+import random
+import time
+from curses import curs_set, wrapper
+from typing import Iterable
 
+from animations.fire import fire
+from animations.space_garbage import fly_garbage
+from animations.stars import generate_stars
+from curses_tools import draw_frame, get_frame_size, read_controls
+from custom_tools import async_sleep, load_frames_from_dir
+from physics import update_speed
 
 TIC_TIMEOUT = 0.1
 COROUTINES = []
