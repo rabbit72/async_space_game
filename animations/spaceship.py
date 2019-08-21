@@ -1,6 +1,7 @@
 from curses_tools import draw_frame, read_controls, get_frame_size
 from custom_tools import async_sleep
 import itertools
+from physics import update_speed
 
 
 spaceship_frame = None
@@ -18,10 +19,14 @@ async def run_spaceship(canvas, start_row: int, start_column: int):
     max_row = max_y - frame_rows - border_indent
     max_column = max_x - frame_columns - border_indent
 
+    row_speed = column_speed = 0
+    new_row = current_row
+    new_column = current_column
     while True:
         diff_rows, diff_columns, press_enter = read_controls(canvas)
-        new_row = current_row + diff_rows
-        new_column = current_column + diff_columns
+        row_speed, column_speed = update_speed(row_speed, column_speed, diff_rows, diff_columns)
+        new_row += row_speed
+        new_column += column_speed
         # middle coordinate for correct position when abs(diff_rows) > 1
         current_row = sorted([min_row, max_row, new_row])[1]
         current_column = sorted([min_column, max_column, new_column])[1]
