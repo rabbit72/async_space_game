@@ -13,6 +13,7 @@ from physics import update_speed
 TIC_TIMEOUT = 0.1
 COROUTINES = []
 OBSTACLES = []
+OBSTACLES_IN_LAST_COLLISIONS = []
 SPACESHIP_FRAME = None
 
 
@@ -88,6 +89,7 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
     row = 0
     obstacle = obstacles.Obstacle(row, column, *frame_size)
     global OBSTACLES
+    global OBSTACLES_IN_LAST_COLLISIONS
     OBSTACLES.append(obstacle)
     try:
         while row < rows_number:
@@ -96,6 +98,9 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
             await async_sleep(1)
             draw_frame(canvas, row, column, garbage_frame, negative=True)
             row += speed
+            if obstacle in OBSTACLES_IN_LAST_COLLISIONS:
+                OBSTACLES_IN_LAST_COLLISIONS.remove(obstacle)
+                return
     finally:
         OBSTACLES.remove(obstacle)
 
@@ -120,13 +125,17 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
     max_row, max_column = rows - 1, columns - 1
 
     curses.beep()
-
+    global OBSTACLES_IN_LAST_COLLISIONS
     while 0 < row < max_row and 0 < column < max_column:
         canvas.addstr(round(row), round(column), symbol)
         await async_sleep(1)
         canvas.addstr(round(row), round(column), ' ')
         row += rows_speed
         column += columns_speed
+        for obstacle in OBSTACLES:
+            if obstacle.has_collision(row, column):
+                OBSTACLES_IN_LAST_COLLISIONS.append(obstacle)
+                return
 
 
 def generate_stars(canvas, quantity: int, symbols: iter = "+*.:") -> list:
