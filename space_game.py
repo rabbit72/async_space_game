@@ -8,6 +8,7 @@ from typing import Iterable
 import obstacles
 from curses_tools import draw_frame, get_frame_size, read_controls
 from custom_tools import async_sleep, load_frames_from_dir
+from explosion import explode
 from physics import update_speed
 
 TIC_TIMEOUT = 0.1
@@ -81,13 +82,13 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
     """Animate garbage, flying from top to bottom.
     Сolumn position will stay same, as specified on start."""
     rows_number, columns_number = canvas.getmaxyx()
-    frame_size = get_frame_size(garbage_frame)
+    frame_rows, frame_columns = get_frame_size(garbage_frame)
 
     column = max(column, 0)
     column = min(column, columns_number - 1)
 
     row = 0
-    obstacle = obstacles.Obstacle(row, column, *frame_size)
+    obstacle = obstacles.Obstacle(row, column, frame_rows, frame_columns)
     global OBSTACLES
     global OBSTACLES_IN_LAST_COLLISIONS
     OBSTACLES.append(obstacle)
@@ -100,6 +101,9 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
             row += speed
             if obstacle in OBSTACLES_IN_LAST_COLLISIONS:
                 OBSTACLES_IN_LAST_COLLISIONS.remove(obstacle)
+                frame_center_row = row + frame_rows / 2
+                frame_center_columns = column + frame_rows / 2
+                await explode(canvas, frame_center_row, frame_center_columns)
                 return
     finally:
         OBSTACLES.remove(obstacle)
