@@ -5,9 +5,6 @@ import time
 from curses import curs_set, wrapper
 from typing import Iterable
 
-from animations.fire import fire
-from animations.space_garbage import fly_garbage
-from animations.stars import generate_stars
 from curses_tools import draw_frame, get_frame_size, read_controls
 from custom_tools import async_sleep, load_frames_from_dir
 from physics import update_speed
@@ -66,6 +63,98 @@ async def animate_spaceship(main_frame: str, *other_frames: str):
         await async_sleep(2)
 
 
+async def fill_orbit_with_garbage(canvas, garbage_frames: Iterable[str]):
+    while True:
+        garbage_frame = random.choice(garbage_frames)
+        rows_number, columns_number = canvas.getmaxyx()
+        start_column = random.randint(0, columns_number - 1)
+
+        COROUTINES.append(fly_garbage(canvas, start_column, garbage_frame))
+
+        await async_sleep(random.randint(8, 13))
+
+
+async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
+    """Animate garbage, flying from top to bottom.
+    Сolumn position will stay same, as specified on start."""
+    rows_number, columns_number = canvas.getmaxyx()
+
+    column = max(column, 0)
+    column = min(column, columns_number - 1)
+
+    row = 0
+
+    while row < rows_number:
+        draw_frame(canvas, row, column, garbage_frame)
+        await async_sleep(1)
+        draw_frame(canvas, row, column, garbage_frame, negative=True)
+        row += speed
+
+
+async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
+    """Display animation of gun shot. Direction and speed can be specified."""
+
+    row, column = start_row, start_column
+
+    canvas.addstr(round(row), round(column), '*')
+    await async_sleep(1)
+    canvas.addstr(round(row), round(column), 'O')
+    await async_sleep(1)
+    canvas.addstr(round(row), round(column), ' ')
+
+    row += rows_speed
+    column += columns_speed
+
+    symbol = '-' if columns_speed else '|'
+
+    rows, columns = canvas.getmaxyx()
+    max_row, max_column = rows - 1, columns - 1
+
+    curses.beep()
+
+    while 0 < row < max_row and 0 < column < max_column:
+        canvas.addstr(round(row), round(column), symbol)
+        await async_sleep(1)
+        canvas.addstr(round(row), round(column), ' ')
+        row += rows_speed
+        column += columns_speed
+
+
+def generate_stars(canvas, quantity: int, symbols: iter = "+*.:") -> list:
+    used_coordinates = set()
+    min_row, min_column = 1, 1
+    max_y, max_x = canvas.getmaxyx()
+    max_row, max_column = max_y - 2, max_x - 2
+
+    for _ in range(quantity):
+
+        row = random.randint(min_row, max_row)
+        column = random.randint(min_row, max_column)
+        while (row, column) in used_coordinates:
+            row = random.randint(min_row, max_row)
+            column = random.randint(min_row, max_column)
+        used_coordinates.add((row, column))
+
+        symbol = random.choice(symbols)
+        offset = random.randint(5, 25)
+        yield blink(canvas, row, column, offset, symbol)
+
+
+async def blink(canvas, row, column, offset_tics: int, symbol="*"):
+    while True:
+        canvas.addstr(row, column, symbol, curses.A_DIM)
+        await async_sleep(offset_tics)
+
+        canvas.addstr(row, column, symbol)
+        await async_sleep(3)
+
+        canvas.addstr(row, column, symbol, curses.A_BOLD)
+        await async_sleep(5)
+
+        canvas.addstr(row, column, symbol)
+        await async_sleep(3)
+
+
 def draw(canvas):
     # initialisation
     canvas.border()
@@ -103,17 +192,6 @@ def draw(canvas):
         canvas.border()
         canvas.refresh()
         time.sleep(TIC_TIMEOUT)
-
-
-async def fill_orbit_with_garbage(canvas, garbage_frames: Iterable[str]):
-    while True:
-        garbage_frame = random.choice(garbage_frames)
-        rows_number, columns_number = canvas.getmaxyx()
-        start_column = random.randint(0, columns_number - 1)
-
-        COROUTINES.append(fly_garbage(canvas, start_column, garbage_frame))
-
-        await async_sleep(random.randint(8, 13))
 
 
 if __name__ == '__main__':
