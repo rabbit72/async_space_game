@@ -5,17 +5,19 @@ import time
 from curses import curs_set, wrapper
 from typing import Iterable
 
+import obstacles
 from curses_tools import draw_frame, get_frame_size, read_controls
 from custom_tools import async_sleep, load_frames_from_dir
 from physics import update_speed
 
 TIC_TIMEOUT = 0.1
 COROUTINES = []
-spaceship_frame = None
+OBSTACLES = []
+SPACESHIP_FRAME = None
 
 
 async def run_spaceship(canvas, start_row: int, start_column: int):
-    frame_rows, frame_columns = get_frame_size(spaceship_frame)
+    frame_rows, frame_columns = get_frame_size(SPACESHIP_FRAME)
     border_indent = 1
     # correcting depend on frame size
     frame_center_column = (frame_columns // 2)
@@ -41,8 +43,8 @@ async def run_spaceship(canvas, start_row: int, start_column: int):
         current_row = sorted([min_row, max_row, new_row])[1]
         current_column = sorted([min_column, max_column, new_column])[1]
 
-        draw_frame(canvas, current_row, current_column, spaceship_frame)
-        previous_frame = spaceship_frame
+        draw_frame(canvas, current_row, current_column, SPACESHIP_FRAME)
+        previous_frame = SPACESHIP_FRAME
 
         if space_button:
             global COROUTINES
@@ -56,10 +58,10 @@ async def run_spaceship(canvas, start_row: int, start_column: int):
 
 
 async def animate_spaceship(main_frame: str, *other_frames: str):
-    global spaceship_frame
+    global SPACESHIP_FRAME
     frames = [main_frame, *other_frames]
     for frame in itertools.cycle(frames):
-        spaceship_frame = frame
+        SPACESHIP_FRAME = frame
         await async_sleep(2)
 
 
@@ -78,17 +80,24 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
     """Animate garbage, flying from top to bottom.
     Сolumn position will stay same, as specified on start."""
     rows_number, columns_number = canvas.getmaxyx()
+    frame_size = get_frame_size(garbage_frame)
 
     column = max(column, 0)
     column = min(column, columns_number - 1)
 
     row = 0
-
-    while row < rows_number:
-        draw_frame(canvas, row, column, garbage_frame)
-        await async_sleep(1)
-        draw_frame(canvas, row, column, garbage_frame, negative=True)
-        row += speed
+    obstacle = obstacles.Obstacle(row, column, *frame_size)
+    global OBSTACLES
+    OBSTACLES.append(obstacle)
+    try:
+        while row < rows_number:
+            obstacle.row = row
+            draw_frame(canvas, row, column, garbage_frame)
+            await async_sleep(1)
+            draw_frame(canvas, row, column, garbage_frame, negative=True)
+            row += speed
+    finally:
+        OBSTACLES.remove(obstacle)
 
 
 async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
@@ -173,6 +182,7 @@ def draw(canvas):
 
     # add garbage constructor
     COROUTINES.append(fill_orbit_with_garbage(canvas, garbage_frames))
+    COROUTINES.append(obstacles.show_obstacles(canvas, OBSTACLES))
 
     # add stars animation
     COROUTINES.extend([star for star in generate_stars(canvas, 100)])
