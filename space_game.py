@@ -95,7 +95,10 @@ async def run_spaceship(canvas, start_row: int, start_column: int, game_over: st
         draw_frame(canvas, current_row, current_column, previous_frame, negative=True)
 
         for obstacle in obstacles:
-            if obstacle.has_collision(current_row, current_column):
+            is_collision = obstacle.has_collision(
+                    current_row, current_column, frame_rows, frame_columns
+            )
+            if is_collision:
                 await explode(canvas, current_row, current_column)
                 coroutines.append(show_gameover(canvas, game_over))
                 return
